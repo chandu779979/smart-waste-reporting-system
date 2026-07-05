@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Registration - SWM System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card card-glass shadow-lg">
+                <div class="card-header-gradient p-4 text-center">
+                    <h3 class="mb-0 text-white"><i class="fa-solid fa-user-shield me-2 text-info"></i>Admin Registration</h3>
+                    <p class="text-muted small mb-0 mt-1">Register as a municipality supervisor to review citizen reports</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('auth.admin_register') }}" novalidate>
+                        {{ form.csrf_token }}
+                        
+                        <!-- Name Field -->
+                        <div class="mb-3">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Enter your full name") }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.name.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Email Field -->
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), readonly=True, placeholder="Select municipality to auto-assign email") }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.email.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Phone Field -->
+                        <div class="mb-3">
+                            {{ form.phone.label(class="form-label") }}
+                            {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else ""), placeholder="Enter contact number") }}
+                            {% if form.phone.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.phone.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Municipality Select Field -->
+                        <div class="mb-3">
+                            {{ form.municipality_id.label(class="form-label") }}
+                            {{ form.municipality_id(class="form-select" + (" is-invalid" if form.municipality_id.errors else "")) }}
+                            {% if form.municipality_id.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.municipality_id.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="mb-3">
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Minimum 6 characters") }}
+                            {% if form.password.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.password.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Confirm Password Field -->
+                        <div class="mb-4">
+                            {{ form.confirm_password.label(class="form-label") }}
+                            {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else ""), placeholder="Re-enter password") }}
+                            {% if form.confirm_password.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.confirm_password.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid mb-3">
+                            {{ form.submit(class="btn btn-accent-gradient btn-lg") }}
+                        </div>
+                        
+                        <div class="text-center">
+                            <span class="text-muted">Already registered as Admin? </span>
+                            <a href="{{ url_for('auth.admin_login') }}" class="text-info fw-bold text-decoration-none">Login Here</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const municipalitySelect = document.getElementById("municipality_id");
+        const emailInput = document.getElementById("email");
+        
+        function updateAdminEmail() {
+            if (municipalitySelect.selectedIndex >= 0) {
+                const selectedText = municipalitySelect.options[municipalitySelect.selectedIndex].text;
+                if (selectedText && selectedText !== "" && selectedText !== "Select Municipality") {
+                    const prefix = selectedText.toLowerCase().replace(" municipality", "").trim().replace(/\s+/g, "-");
+                    emailInput.value = `admin@${prefix}.gov.in`;
+                } else {
+                    emailInput.value = "";
+                }
+            }
+        }
+        
+        if (municipalitySelect && emailInput) {
+            municipalitySelect.addEventListener("change", updateAdminEmail);
+            updateAdminEmail();
+        }
+    });
+</script>
+{% endblock %}

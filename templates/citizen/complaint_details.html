@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Complaint details #{{ complaint.id }} - SWM System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Back Navigation -->
+    <div class="mb-3">
+        <a href="{{ url_for('citizen.dashboard') }}" class="btn btn-outline-glass btn-sm">
+            <i class="fa-solid fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Header Block -->
+    <div class="row align-items-center mb-4">
+        <div class="col-sm-8">
+            <h2 class="text-white mb-1">Complaint details #{{ complaint.id }}</h2>
+            <h4 class="text-slate-400 font-weight-bold">{{ complaint.title }}</h4>
+        </div>
+        <div class="col-sm-4 text-sm-end mt-3 mt-sm-0">
+            {% if complaint.status == 'Pending' %}
+                <span class="badge-pending fs-5 px-3 py-2"><i class="fa-solid fa-clock me-2"></i>Pending</span>
+            {% elif complaint.status == 'In Progress' %}
+                <span class="badge-progress fs-5 px-3 py-2"><i class="fa-solid fa-spinner fa-spin me-2"></i>In Progress</span>
+            {% elif complaint.status == 'Resolved' %}
+                <span class="badge-resolved fs-5 px-3 py-2"><i class="fa-solid fa-check-double me-2"></i>Resolved</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left: Complaint Specifications & Photo -->
+        <div class="col-md-7">
+            <div class="card card-glass shadow mb-4">
+                <div class="card-header card-header-gradient">
+                    <h5 class="mb-0 text-white"><i class="fa-solid fa-circle-info me-2 text-success"></i>Specifications</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Waste Category</span>
+                            <strong class="text-white fs-5"><i class="fa-solid fa-dumpster me-2 text-success"></i>{{ complaint.waste_category }}</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Target Municipality</span>
+                            <strong class="text-white fs-5"><i class="fa-solid fa-building me-2 text-success"></i>{{ complaint.municipality.name }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <span class="text-muted small d-block">Description</span>
+                        <p class="text-slate-200 mt-1 bg-slate-900 bg-opacity-40 p-3 rounded border border-slate-800" style="white-space: pre-wrap;">{{ complaint.description }}</p>
+                    </div>
+
+                    {% if complaint.image_path %}
+                        <div class="mb-3">
+                            <span class="text-muted small d-block mb-2">Uploaded Issue Image</span>
+                            <div class="complaint-img-container shadow">
+                                <img src="{{ url_for('static', filename='uploads/' + complaint.image_path) }}" alt="Reported waste issue">
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-secondary card-glass text-center py-4">
+                            <i class="fa-solid fa-image-slash fs-2 mb-2 text-muted"></i>
+                            <p class="mb-0 small text-muted">No photo uploaded for this report.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Map Location & History Timeline -->
+        <div class="col-md-5">
+            <!-- Map Card -->
+            <div class="card card-glass shadow mb-4">
+                <div class="card-header card-header-gradient">
+                    <h5 class="mb-0 text-white"><i class="fa-solid fa-map-location-dot me-2 text-success"></i>Location Location</h5>
+                </div>
+                <div class="card-body p-3">
+                    <!-- Google Map placeholder centered at coordinates -->
+                    <div id="map-admin" data-lat="{{ complaint.latitude }}" data-lng="{{ complaint.longitude }}" data-address="{{ complaint.address }}"></div>
+                    <div class="mt-3">
+                        <span class="text-muted small d-block">Geocoded Address</span>
+                        <strong class="text-slate-200 small"><i class="fa-solid fa-location-dot text-danger me-1"></i>{{ complaint.address }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Municipality Contact Card -->
+            <div class="card card-glass shadow mb-4 border border-success border-opacity-25">
+                <div class="card-header card-header-gradient">
+                    <h5 class="mb-0 text-white"><i class="fa-solid fa-building-circle-phone me-2 text-success"></i>Municipality Contact</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <span class="text-muted small d-block"><i class="fa-solid fa-phone text-success me-1"></i>Contact Number</span>
+                        <strong class="text-white fs-6">{{ complaint.municipality.contact_number or 'Not Configured' }}</strong>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted small d-block"><i class="fa-solid fa-envelope text-success me-1"></i>Contact Email</span>
+                        <strong class="text-white fs-6">{{ complaint.municipality.contact_email or 'Not Configured' }}</strong>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted small d-block"><i class="fa-solid fa-location-dot text-success me-1"></i>Office Address</span>
+                        <strong class="text-white fs-6">{{ complaint.municipality.office_address or 'Not Configured' }}</strong>
+                    </div>
+                    <div class="mb-0">
+                        <span class="text-muted small d-block"><i class="fa-solid fa-clock text-success me-1"></i>Office Hours</span>
+                        <strong class="text-white fs-6">{{ complaint.municipality.office_hours or 'Not Configured' }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Timeline Card -->
+            <div class="card card-glass shadow">
+                <div class="card-header card-header-gradient">
+                    <h5 class="mb-0 text-white"><i class="fa-solid fa-clock-rotate-left me-2 text-success"></i>Status History Timeline</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="timeline">
+                        {% for log in complaint.status_history %}
+                            <div class="timeline-item">
+                                <div class="timeline-marker {% if log.new_status == 'Resolved' %}resolved{% elif log.new_status == 'In Progress' %}progress{% else %}pending{% endif %}"></div>
+                                <div class="timeline-content ms-2">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h6 class="text-white mb-0">
+                                            {% if not log.previous_status %}
+                                                Submitted
+                                            {% else %}
+                                                {{ log.previous_status }} &rarr; {{ log.new_status }}
+                                            {% endif %}
+                                        </h6>
+                                        <span class="text-muted small"><i class="fa-solid fa-calendar-day me-1"></i>{{ log.timestamp | format_dt }}</span>
+                                    </div>
+                                    <p class="text-muted small mb-2" style="font-size: 0.8rem;">Action by: <strong>{{ log.updated_by_name }}</strong></p>
+                                    <div class="bg-slate-900 bg-opacity-65 p-2 rounded border border-slate-800 text-slate-300 small">
+                                        {{ log.comment }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

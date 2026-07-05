@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}Report Waste Issue - SWM System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card card-glass shadow-lg">
+                <div class="card-header-gradient p-4">
+                    <h3 class="mb-0 text-white"><i class="fa-solid fa-circle-plus me-2 text-success"></i>Report Waste Issue</h3>
+                    <p class="text-muted small mb-0 mt-1">Submit waste complaints by specifying the location on Google Maps and uploading an image.</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('citizen.submit_complaint') }}" enctype="multipart/form-data" novalidate>
+                        {{ form.csrf_token }}
+                        
+                        <div class="row g-4">
+                            <!-- Left Column: Details & Images -->
+                            <div class="col-md-6">
+                                <h5 class="text-white border-bottom border-slate-700 pb-2 mb-3"><i class="fa-solid fa-file-invoice me-2 text-success"></i>Complaint Details</h5>
+                                
+                                <!-- Title -->
+                                <div class="mb-3">
+                                    {{ form.title.label(class="form-label") }}
+                                    {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), placeholder="e.g. Overflowing garbage bin on Main Road") }}
+                                    {% if form.title.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.title.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Waste Category -->
+                                <div class="mb-3">
+                                    {{ form.waste_category.label(class="form-label") }}
+                                    {{ form.waste_category(class="form-select" + (" is-invalid" if form.waste_category.errors else "")) }}
+                                    {% if form.waste_category.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.waste_category.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Target Municipality -->
+                                <div class="mb-3">
+                                    {{ form.municipality_id.label(class="form-label") }}
+                                    {{ form.municipality_id(class="form-select" + (" is-invalid" if form.municipality_id.errors else "")) }}
+                                    {% if form.municipality_id.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.municipality_id.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Image Upload -->
+                                <div class="mb-3">
+                                    {{ form.image.label(class="form-label") }}
+                                    {{ form.image(class="form-control" + (" is-invalid" if form.image.errors else "")) }}
+                                    {% if form.image.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.image.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Description -->
+                                <div class="mb-3">
+                                    {{ form.description.label(class="form-label") }}
+                                    {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="5", placeholder="Describe the issue in detail...") }}
+                                    {% if form.description.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.description.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Right Column: Google Map Picker -->
+                            <div class="col-md-6">
+                                <h5 class="text-white border-bottom border-slate-700 pb-2 mb-3"><i class="fa-solid fa-map-location-dot me-2 text-success"></i>Select Location</h5>
+                                
+                                <!-- Map Search Box -->
+                                <div class="mb-3">
+                                    <label for="map-search" class="form-label">Search Location</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-slate-900 border-slate-800 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                        <input type="text" id="map-search" class="form-control" placeholder="Search address, landmark, or street...">
+                                    </div>
+                                </div>
+
+                                <!-- Google Map Container -->
+                                <div class="mb-3">
+                                    <button type="button" id="btn-get-location" class="btn btn-outline-glass w-100 py-2.5">
+                                        <i class="fa-solid fa-location-crosshairs text-success me-2"></i>Get My Location
+                                    </button>
+                                </div>
+                                <div id="map"></div>
+                                
+                                <!-- Auto-populated Address Input -->
+                                <div class="mb-3">
+                                    {{ form.address.label(class="form-label") }}
+                                    {{ form.address(class="form-control" + (" is-invalid" if form.address.errors else ""), placeholder="Select on the map or type address manually") }}
+                                    {% if form.address.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.address.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Visible Coordinates Fields -->
+                                <div class="row g-3 mb-3">
+                                    <div class="col-sm-6">
+                                        {{ form.latitude.label(class="form-label") }}
+                                        {{ form.latitude(class="form-control" + (" is-invalid" if form.latitude.errors else ""), placeholder="e.g. 14.6818") }}
+                                        {% if form.latitude.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.latitude.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-sm-6">
+                                        {{ form.longitude.label(class="form-label") }}
+                                        {{ form.longitude(class="form-control" + (" is-invalid" if form.longitude.errors else ""), placeholder="e.g. 77.6006") }}
+                                        {% if form.longitude.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.longitude.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="border-top border-slate-700 pt-4 mt-4 d-flex justify-content-end gap-3">
+                            <a href="{{ url_for('citizen.dashboard') }}" class="btn btn-outline-glass btn-lg px-4">
+                                <i class="fa-solid fa-ban me-1"></i>Cancel
+                            </a>
+                            {{ form.submit(class="btn btn-primary-gradient btn-lg px-4") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

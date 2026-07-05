@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+
+{% block title %}Citizen Dashboard - SWM System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Header Block -->
+    <div class="row align-items-center mb-4">
+        <div class="col-md-8">
+            <h2 class="text-white"><i class="fa-solid fa-gauge-high me-2 text-success"></i>Citizen Dashboard</h2>
+            <p class="text-light">Welcome back, <strong class="text-success">{{ current_user.name }}</strong>. Track and manage your reports here.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{{ url_for('citizen.submit_complaint') }}" class="btn btn-primary-gradient btn-lg w-100 w-md-auto">
+                <i class="fa-solid fa-circle-plus me-2"></i>Report New Waste Issue
+            </a>
+        </div>
+    </div>
+
+    <!-- JSON stats injected for Chart.js -->
+    <div id="dashboard-analytics" 
+         data-status='{{ status_counts|tojson }}' 
+         data-categories='{{ category_counts|tojson }}' 
+         data-monthly='{{ monthly_counts|tojson }}' 
+         class="d-none">
+    </div>
+
+    <!-- Quick Stats & Profile Summary & Municipality Contacts -->
+    <div class="row g-4 mb-4">
+        <!-- 1. Stats Card -->
+        <div class="col-lg-3 col-md-4">
+            <div class="metric-card h-100 py-3">
+                <div>
+                    <span class="text-muted text-uppercase fw-bold small" style="font-size: 0.75rem;">Total Reported</span>
+                    <h2 class="metric-value text-white mb-0">{{ total_complaints }}</h2>
+                </div>
+                <div class="bg-success bg-opacity-10 text-success p-3 rounded-circle">
+                    <i class="fa-solid fa-folder-open fs-3"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 2. Profile Card -->
+        <div class="col-lg-4 col-md-8">
+            <div class="card card-glass p-3 h-100 justify-content-center">
+                <div class="row align-items-center">
+                    <div class="col-4 text-center border-end border-slate-700">
+                        <i class="fa-solid fa-user-circle text-success fs-1 mb-2"></i>
+                        <h6 class="mb-0 text-white" style="font-size: 0.85rem;">{{ current_user.name }}</h6>
+                    </div>
+                    <div class="col-8 px-3">
+                        <p class="mb-1 text-slate-300 small" style="font-size: 0.8rem;"><i class="fa-solid fa-envelope me-2 text-success"></i><strong>Email:</strong><br>{{ current_user.email }}</p>
+                        <p class="mb-0 text-slate-300 small" style="font-size: 0.8rem;"><i class="fa-solid fa-phone me-2 text-success"></i><strong>Phone:</strong> {{ current_user.phone }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Municipality Contact Card -->
+        <div class="col-lg-5 col-md-12">
+            <div class="card card-glass h-100">
+                <div class="card-header card-header-gradient py-2 px-3">
+                    <span class="text-white fw-bold small"><i class="fa-solid fa-building me-2 text-success"></i>Municipality Contact Desk</span>
+                </div>
+                <div class="card-body p-3 overflow-auto" style="max-height: 145px;">
+                    {% if reported_municipalities %}
+                        {% for m in reported_municipalities %}
+                            <div class="mb-2 {% if not loop.last %}border-bottom border-slate-800 pb-2{% endif %}">
+                                <h6 class="text-success mb-1 small" style="font-size: 0.8rem;"><strong>{{ m.name }}</strong></h6>
+                                <div class="row g-1 text-slate-300" style="font-size: 0.75rem;">
+                                    <div class="col-6">
+                                        <i class="fa-solid fa-phone text-success me-1"></i>{{ m.contact_number or 'Not Configured' }}
+                                    </div>
+                                    <div class="col-6">
+                                        <i class="fa-solid fa-envelope text-success me-1"></i>{{ m.contact_email or 'Not Configured' }}
+                                    </div>
+                                    <div class="col-12 mt-1">
+                                        <i class="fa-solid fa-location-dot text-success me-1"></i>{{ m.office_address or 'Not Configured' }}
+                                    </div>
+                                    <div class="col-12">
+                                        <i class="fa-solid fa-clock text-success me-1"></i>{{ m.office_hours or 'Not Configured' }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-2 small">
+                            <i class="fa-solid fa-circle-info me-1"></i>No contacts available. Submit a complaint to display details.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    {% if total_complaints > 0 %}
+    <div class="row g-4 mb-4">
+        <!-- Status Chart -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card card-glass h-100">
+                <div class="card-header card-header-gradient">
+                    <h5 class="mb-0 py-1 text-white"><i class="fa-solid fa-chart-pie me-2 text-success"></i>Complaints by Status</h5>
+                </div>
+                <div class="card-body d-flex align-items-center">
+                    <div class="chart-container">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Category Chart -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card card-glass h-100">
+                <div class="card-header card-header-gradient">
+                    <h5 class="mb-0 py-1 text-white"><i class="fa-solid fa-chart-bar me-2 text-success"></i>Complaints by Category</h5>
+                </div>
+                <div class="card-body d-flex align-items-center">
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Monthly Chart -->
+        <div class="col-lg-4 col-md-12">
+            <div class="card card-glass h-100">
+                <div class="card-header card-header-gradient">
+                    <h5 class="mb-0 py-1 text-white"><i class="fa-solid fa-chart-line me-2 text-success"></i>Monthly Timeline</h5>
+                </div>
+                <div class="card-body d-flex align-items-center">
+                    <div class="chart-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Complaint History Table -->
+    <div class="card card-glass shadow">
+        <div class="card-header card-header-gradient d-flex justify-content-between align-items-center p-3">
+            <h5 class="mb-0 text-white"><i class="fa-solid fa-clock-rotate-left me-2 text-success"></i>Complaint History</h5>
+            <span class="badge bg-success bg-opacity-20 text-success border border-success-subtle px-3 py-2 rounded-pill">Total: {{ total_complaints }}</span>
+        </div>
+        <div class="card-body p-0">
+            {% if complaints %}
+                <div class="table-responsive">
+                    <table class="table table-dark-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Complaint Title</th>
+                                <th>Municipality</th>
+                                <th>Waste Category</th>
+                                <th>Status</th>
+                                <th>Date Reported</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in complaints %}
+                                <tr>
+                                    <td>#{{ c.id }}</td>
+                                    <td class="fw-bold text-white">{{ c.title }}</td>
+                                    <td>{{ c.municipality.name }}</td>
+                                    <td>{{ c.waste_category }}</td>
+                                    <td>
+                                        {% if c.status == 'Pending' %}
+                                            <span class="badge-pending"><i class="fa-solid fa-clock me-1"></i>Pending</span>
+                                        {% elif c.status == 'In Progress' %}
+                                            <span class="badge-progress"><i class="fa-solid fa-spinner fa-spin me-1"></i>In Progress</span>
+                                        {% elif c.status == 'Resolved' %}
+                                            <span class="badge-resolved"><i class="fa-solid fa-check-double me-1"></i>Resolved</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ c.created_at | format_dt }}</td>
+                                    <td class="text-center">
+                                        <a href="{{ url_for('citizen.complaint_details', complaint_id=c.id) }}" class="btn btn-sm btn-outline-glass">
+                                            <i class="fa-solid fa-eye me-1"></i>Track status
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fa-solid fa-trash-can-slash text-muted mb-3" style="font-size: 4rem;"></i>
+                    <h5 class="text-slate-400">No complaints reported yet.</h5>
+                    <p class="text-muted small">If you notice any garbage overflow or waste disposal issues in your area, please report them.</p>
+                    <a href="{{ url_for('citizen.submit_complaint') }}" class="btn btn-success mt-2">
+                        <i class="fa-solid fa-circle-plus me-1"></i>Report Now
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Table Pagination -->
+        {% if pagination and pagination.pages > 1 %}
+            <div class="card-footer border-top border-slate-700 py-3 d-flex justify-content-center">
+                <nav aria-label="Complaint navigation">
+                    <ul class="pagination pagination-custom mb-0">
+                        <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
+                            <a class="page-link" href="{{ url_for('citizen.dashboard', page=pagination.prev_num) if pagination.has_prev else '#' }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo; Previous</span>
+                            </a>
+                        </li>
+                        
+                        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                            {% if page_num %}
+                                <li class="page-item {{ 'active' if page_num == pagination.page }}">
+                                    <a class="page-link" href="{{ url_for('citizen.dashboard', page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <li class="page-item {{ 'disabled' if not pagination.has_next }}">
+                            <a class="page-link" href="{{ url_for('citizen.dashboard', page=pagination.next_num) if pagination.has_next else '#' }}" aria-label="Next">
+                                <span aria-hidden="true">Next &raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Citizen Profile - SWM System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card card-glass shadow-lg">
+                <div class="card-header-gradient p-4 text-center">
+                    <h3 class="mb-0 text-white"><i class="fa-solid fa-id-card me-2 text-success"></i>My Profile</h3>
+                    <p class="text-muted small mb-0 mt-1">Review and update your citizen registration details</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('citizen.profile') }}" novalidate>
+                        {{ form.csrf_token }}
+                        
+                        <!-- Read-only Email Field -->
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Email Address (Cannot be changed)</label>
+                            <input type="text" class="form-control text-muted" value="{{ current_user.email }}" readonly style="opacity: 0.7;">
+                        </div>
+
+                        <!-- Name Field -->
+                        <div class="mb-3">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Enter your full name") }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.name.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Phone Field -->
+                        <div class="mb-4">
+                            {{ form.phone.label(class="form-label") }}
+                            {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else ""), placeholder="Enter your contact number") }}
+                            {% if form.phone.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.phone.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid mb-3">
+                            {{ form.submit(class="btn btn-primary-gradient btn-lg") }}
+                        </div>
+                        
+                        <div class="text-center">
+                            <a href="{{ url_for('citizen.dashboard') }}" class="text-success fw-bold text-decoration-none">
+                                <i class="fa-solid fa-arrow-left me-1"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

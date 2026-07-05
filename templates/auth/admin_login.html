@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Login - SWM System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card card-glass shadow-lg">
+                <div class="card-header-gradient p-4 text-center">
+                    <h3 class="mb-0 text-white"><i class="fa-solid fa-lock me-2 text-info"></i>Admin Login</h3>
+                    <p class="text-muted small mb-0 mt-1">Access the administrative terminal to review complaints</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('auth.admin_login') }}" novalidate>
+                        {{ form.csrf_token }}
+                        
+                        <!-- Email Field -->
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="Enter your registered email") }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.email.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="mb-4">
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Enter your password") }}
+                            {% if form.password.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.password.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid mb-3">
+                            {{ form.submit(class="btn btn-accent-gradient btn-lg") }}
+                        </div>
+                        
+                        <div class="text-center">
+                            <span class="text-muted">Need a supervisor account? </span>
+                            <a href="{{ url_for('auth.admin_register') }}" class="text-info fw-bold text-decoration-none">Create Admin Account</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

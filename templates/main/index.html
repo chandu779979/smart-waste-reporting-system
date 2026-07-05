@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Smart Waste Reporting and Management System{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container text-center text-lg-start">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill mb-3">
+                    <i class="fa-solid fa-leaf me-1"></i>Clean City Initiative
+                </span>
+                <h1 class="hero-title">
+                    Smart Waste <br>
+                    <span class="hero-highlight">Reporting & Management</span>
+                </h1>
+                <p class="lead text-slate-300 mb-4" style="color: #94a3b8; font-size: 1.25rem;">
+                    Empowering citizens to report waste issues directly to municipalities. Help keep your streets clean, track complaint resolutions in real-time, and make a difference.
+                </p>
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_citizen %}
+                            <a href="{{ url_for('citizen.dashboard') }}" class="btn btn-primary-gradient btn-lg">
+                                <i class="fa-solid fa-chart-line me-2"></i>Go to Citizen Dashboard
+                            </a>
+                        {% elif current_user.is_admin %}
+                            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-accent-gradient btn-lg">
+                                <i class="fa-solid fa-chart-pie me-2"></i>Go to Admin Dashboard
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{{ url_for('auth.citizen_login') }}" class="btn btn-primary-gradient btn-lg">
+                            <i class="fa-solid fa-right-to-bracket me-2"></i>Citizen Login
+                        </a>
+                        <a href="{{ url_for('auth.admin_login') }}" class="btn btn-outline-glass btn-lg">
+                            <i class="fa-solid fa-shield-halved me-2"></i>Municipality Admin
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <!-- Visual Card representing complaint workflow -->
+                <div class="card card-glass p-4">
+                    <div class="card-header-gradient p-3 mb-4 rounded">
+                        <h4 class="mb-0 text-white"><i class="fa-solid fa-rotate me-2 text-success"></i>System Workflow</h4>
+                    </div>
+                    <div class="row g-4 text-center">
+                        <div class="col-md-4">
+                            <div class="p-3 bg-slate-800 rounded border border-slate-700">
+                                <i class="fa-solid fa-map-location-dot fs-2 text-success mb-3"></i>
+                                <h5>1. Report</h5>
+                                <p class="small text-muted mb-0">Citizen uploads photo & selects GPS location.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-slate-800 rounded border border-slate-700">
+                                <i class="fa-solid fa-envelope-open-text fs-2 text-info mb-3"></i>
+                                <h5>2. Dispatch</h5>
+                                <p class="small text-muted mb-0">Complaint automatically routed to target Admin.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-slate-800 rounded border border-slate-700">
+                                <i class="fa-solid fa-circle-check fs-2 text-warning mb-3"></i>
+                                <h5>3. Resolve</h5>
+                                <p class="small text-muted mb-0">Admin updates timeline until fully resolved.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Counter Section -->
+<div class="container my-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="metric-card p-4">
+                <div>
+                    <span class="text-muted text-uppercase fw-bold small">Total Reported Issues</span>
+                    <h2 class="metric-value text-white">{{ total_complaints }}</h2>
+                </div>
+                <div class="bg-success bg-opacity-10 text-success p-3 rounded-circle">
+                    <i class="fa-solid fa-trash-can-arrow-up fs-2"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="metric-card p-4">
+                <div>
+                    <span class="text-muted text-uppercase fw-bold small">Resolved Waste Issues</span>
+                    <h2 class="metric-value text-success">{{ resolved_complaints }}</h2>
+                </div>
+                <div class="bg-info bg-opacity-10 text-info p-3 rounded-circle">
+                    <i class="fa-solid fa-hands-clapping fs-2 text-success"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="metric-card p-4">
+                <div>
+                    <span class="text-muted text-uppercase fw-bold small">Registered Municipalities</span>
+                    <h2 class="metric-value text-white">{{ municipalities_count }}</h2>
+                </div>
+                <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-circle">
+                    <i class="fa-solid fa-city fs-2 text-info"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

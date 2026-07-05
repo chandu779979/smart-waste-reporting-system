@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart Waste Reporting & Management{% endblock %}</title>
+    
+    <!-- Google Fonts (Outfit) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <i class="fa-solid fa-recycle me-2"></i>SWM System
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-collapse navbar-nav ms-auto align-items-lg-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.index') }}"><i class="fa-solid fa-house me-1"></i>Home</a>
+                    </li>
+                    
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_citizen %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('citizen.dashboard') }}"><i class="fa-solid fa-chart-line me-1"></i>Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('citizen.submit_complaint') }}"><i class="fa-solid fa-circle-plus me-1"></i>Report Waste</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('citizen.profile') }}"><i class="fa-solid fa-user me-1"></i>Profile</a>
+                            </li>
+                            <li class="nav-item ms-lg-3 my-2 my-lg-0">
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill"><i class="fa-solid fa-user-circle me-1"></i>Citizen: {{ current_user.name }}</span>
+                            </li>
+                        {% elif current_user.is_admin %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin.dashboard') }}"><i class="fa-solid fa-chart-pie me-1"></i>Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin.profile') }}"><i class="fa-solid fa-building me-1"></i>Municipality Profile</a>
+                            </li>
+                            <li class="nav-item ms-lg-3 my-2 my-lg-0">
+                                <span class="badge bg-info-subtle text-info border border-info-subtle px-3 py-2 rounded-pill"><i class="fa-solid fa-building-shield me-1"></i>{{ current_user.municipality.name }} Admin</span>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item ms-lg-2">
+                            <a class="nav-link btn btn-sm btn-outline-danger border-0 text-danger px-3 py-2" href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-right-from-bracket me-1"></i>Logout</a>
+                        </li>
+                    {% else %}
+                        <!-- Citizen Authentication Dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa-solid fa-users me-1"></i>Citizen
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark bg-slate-900 border-slate-800">
+                                <li><a class="dropdown-item" href="{{ url_for('auth.citizen_login') }}"><i class="fa-solid fa-right-to-bracket me-2"></i>Login</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.citizen_register') }}"><i class="fa-solid fa-user-plus me-2"></i>Register</a></li>
+                            </ul>
+                        </li>
+                        
+                        <!-- Admin Authentication Dropdown -->
+                        <li class="nav-item dropdown ms-lg-2">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa-solid fa-shield-halved me-1"></i>Municipality Admin
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark bg-slate-900 border-slate-800">
+                                <li><a class="dropdown-item" href="{{ url_for('auth.admin_login') }}"><i class="fa-solid fa-right-to-bracket me-2"></i>Login</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.admin_register') }}"><i class="fa-solid fa-user-plus me-2"></i>Register</a></li>
+                            </ul>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Alert Messages container -->
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show card-glass border border-{{ category }} shadow" role="alert">
+                        <div class="d-flex align-items-center">
+                            {% if category == 'success' %}
+                                <i class="fa-solid fa-circle-check fs-5 me-2 text-success"></i>
+                            {% elif category == 'danger' %}
+                                <i class="fa-solid fa-triangle-exclamation fs-5 me-2 text-danger"></i>
+                            {% elif category == 'warning' %}
+                                <i class="fa-solid fa-circle-exclamation fs-5 me-2 text-warning"></i>
+                            {% else %}
+                                <i class="fa-solid fa-circle-info fs-5 me-2 text-info"></i>
+                            {% endif %}
+                            <div>{{ message }}</div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content Block -->
+    <main class="flex-shrink-0 my-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto py-4">
+        <div class="container text-center">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-md-start mb-3 mb-md-0">
+                    <p class="mb-0">&copy; 2026 Smart Waste Reporting and Management System. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <span class="text-muted">Empowering citizens for a cleaner tomorrow. <i class="fa-solid fa-leaf text-success ms-1"></i></span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/maps.js') }}"></script>
+    
+    <!-- Google Maps API (Loaded securely if key is present) -->
+    {% if google_maps_api_key %}
+        <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap" 
+                async defer
+                onerror="handleMapLoadError()"></script>
+        <script>
+            function handleMapLoadError() {
+                console.warn("Google Maps script failed to load. Triggering Leaflet fallback...");
+                if (typeof triggerLeafletFallback === 'function') {
+                    triggerLeafletFallback();
+                }
+            }
+        </script>
+    {% endif %}
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

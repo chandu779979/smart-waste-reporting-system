@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Municipality Profile - {{ municipality.name }} - SWM System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card card-glass shadow-lg">
+                <div class="card-header-gradient p-4">
+                    <h3 class="mb-0 text-white"><i class="fa-solid fa-building me-2 text-info"></i>Municipality Contact Profile</h3>
+                    <p class="text-light small mb-0 mt-1">Manage public contact details displayed to citizens for {{ municipality.name }}.</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('admin.profile') }}" novalidate>
+                        {{ form.csrf_token }}
+                        
+                        <!-- Contact Number -->
+                        <div class="mb-3">
+                            {{ form.contact_number.label(class="form-label") }}
+                            {{ form.contact_number(class="form-control" + (" is-invalid" if form.contact_number.errors else ""), placeholder="e.g. +91 9876543210") }}
+                            {% if form.contact_number.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.contact_number.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Contact Email -->
+                        <div class="mb-3">
+                            {{ form.contact_email.label(class="form-label") }}
+                            {{ form.contact_email(class="form-control" + (" is-invalid" if form.contact_email.errors else ""), placeholder="e.g. helpdesk@anantapur.gov.in") }}
+                            {% if form.contact_email.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.contact_email.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Office Address -->
+                        <div class="mb-3">
+                            {{ form.office_address.label(class="form-label") }}
+                            {{ form.office_address(class="form-control" + (" is-invalid" if form.office_address.errors else ""), rows="3", placeholder="e.g. Municipal Office, Main Road, Anantapur") }}
+                            {% if form.office_address.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.office_address.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Office Hours -->
+                        <div class="mb-4">
+                            {{ form.office_hours.label(class="form-label") }}
+                            {{ form.office_hours(class="form-control" + (" is-invalid" if form.office_hours.errors else ""), placeholder="e.g. Monday - Saturday, 9:00 AM - 5:00 PM") }}
+                            {% if form.office_hours.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.office_hours.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="border-top border-slate-700 pt-4 d-flex justify-content-end gap-3">
+                            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-glass btn-lg px-4">
+                                <i class="fa-solid fa-ban me-1"></i>Cancel
+                            </a>
+                            {{ form.submit(class="btn btn-accent-gradient btn-lg px-4") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
