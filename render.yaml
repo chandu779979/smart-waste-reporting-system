@@ -5,7 +5,7 @@ services:
     region: singapore          # Closest region to India
     plan: free
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn wsgi:app --config gunicorn.conf.py"
+    startCommand: "gunicorn app:app --config gunicorn.conf.py"
     healthCheckPath: /
 
     envVars:

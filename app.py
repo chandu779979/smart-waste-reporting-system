@@ -60,7 +60,15 @@ def create_app(config_class=None):
     return app
 
 
+# ---------------------------------------------------------------------------
+# Module-level app instance
+# This allows both:
+#   gunicorn app:app          (Render auto-detection)
+#   gunicorn wsgi:app         (render.yaml explicit command)
+# ---------------------------------------------------------------------------
+app = create_app()
+
+
 if __name__ == '__main__':
-    app = create_app()
     # Development server — do NOT use in production
     app.run(host='127.0.0.1', port=5000, debug=True)
